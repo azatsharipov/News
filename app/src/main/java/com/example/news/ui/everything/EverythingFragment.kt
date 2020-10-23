@@ -1,6 +1,10 @@
 package com.example.news.ui.everything
 
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -25,6 +29,7 @@ class EverythingFragment : MvpAppCompatFragment(), EverythingView {
     lateinit var progressBar: ProgressBar
     lateinit var swipeRefresh: SwipeRefreshLayout
     var isLoading = false
+    var isScrolling = false
 
     @InjectPresenter
     lateinit var presenter: EverythingPresenter
@@ -41,23 +46,18 @@ class EverythingFragment : MvpAppCompatFragment(), EverythingView {
             val isAtLastItem = firstVisibleItemPosition + visibleItemCount >= totalItemCount
             val isNotAtBeginning = firstVisibleItemPosition >= 0
             val isTotalMoreThanVisible = totalItemCount >= 15
-            val shouldPaginate = isAtLastItem && isNotAtBeginning && isTotalMoreThanVisible && !isLoading
-            if(shouldPaginate) {
+            val shouldPaginate = isAtLastItem && isNotAtBeginning && isTotalMoreThanVisible && !isLoading && isScrolling
+            if (shouldPaginate) {
                 presenter.loadNews()
-//                isScrolling = false
-            } else {
-//                rvBreakingNews.setPadding(0, 0, 0, 0)
+                isScrolling = false
             }
         }
 
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
-            /*
-            if(newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+            if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
                 isScrolling = true
             }
-
-             */
         }
     }
 
@@ -76,31 +76,59 @@ class EverythingFragment : MvpAppCompatFragment(), EverythingView {
         recyclerView.apply {
             setHasFixedSize(true)
             adapter = newsAdapter
-//            addOnScrollListener(paginationListener)
+            addOnScrollListener(paginationListener)
         }
 
         swipeRefresh.setOnRefreshListener {
-            presenter.loadNews()
+            if (hasInternet())
+                presenter.loadNews(isSwipe = true)
         }
 
-        presenter.loadNews()
+        if (hasInternet())
+            presenter.loadNews()
 
         return view
     }
+
+    fun hasInternet(): Boolean {
+        val connectivityManager =
+            context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (connectivityManager != null) {
+            if (Build.VERSION.SDK_INT >= 23) {
+                val capabilities =
+                    connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+                if (capabilities != null) {
+                    if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                        return true
+                    } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                        return true
+                    } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                        return true
+                    }
+                }
+            } else {
+                val networkInfo = connectivityManager.activeNetworkInfo
+                return networkInfo!=null && networkInfo.isConnected
+            }
+        }
+        return false
+    }
+
 
     override fun startLoading() {
         isLoading = true
     }
 
     override fun stopLoading() {
-        isLoading = false
         progressBar.visibility = View.GONE
         swipeRefresh.isRefreshing = false
+        isLoading = false
     }
 
-    override fun showNews(news: MutableList<News>) {
-        newsAdapter.news = news
-//        newsAdapter.news.addAll(news)
+    override fun showNews(news: MutableList<News>, isSwipe: Boolean) {
+        if (isSwipe)
+            newsAdapter.news = news
+        newsAdapter.news.addAll(news)
         newsAdapter.notifyDataSetChanged()
     }
 

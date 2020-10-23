@@ -8,6 +8,7 @@ import com.example.news.data.News
     entities = [News::class],
     version = 1
 )
+@TypeConverters(Converters::class)
 abstract class NewsDatabase : RoomDatabase() {
     abstract fun getNewsDao(): NewsDao
 
@@ -26,6 +27,6 @@ abstract class NewsDatabase : RoomDatabase() {
 
         private fun createDatabase(context: Context) =
             Room.databaseBuilder(context.applicationContext,
-                NewsDatabase::class.java, "NewsDB.db").build()
+                NewsDatabase::class.java, "my_newsDB.db").build()
     }
 }

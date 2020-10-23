@@ -4,6 +4,7 @@ import android.os.Bundle
 import com.example.news.data.News
 import com.example.news.data.repository.NewsDbRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import moxy.InjectViewState
 import moxy.MvpPresenter
@@ -20,14 +21,14 @@ class DetailsPresenter : MvpPresenter<DetailsView>() {
     }
 
     fun insertNews(repository: NewsDbRepository) {
-        presenterScope.launch(Dispatchers.Default) {
+        presenterScope.launch(Dispatchers.Main) {
             news.isMarked = true
             repository.insert(news)
         }
     }
 
     fun deleteNews(repository: NewsDbRepository) {
-        presenterScope.launch(Dispatchers.Default) {
+        presenterScope.launch(Dispatchers.Main) {
             news.isMarked = false
             repository.delete(news)
         }

@@ -8,5 +8,5 @@ import moxy.viewstate.strategy.alias.AddToEndSingle
 interface HomeView : MvpView {
     fun startLoading()
     fun stopLoading()
-    fun showNews(news: MutableList<News>)
+    fun showNews(news: MutableList<News>, isPagination: Boolean)
 }

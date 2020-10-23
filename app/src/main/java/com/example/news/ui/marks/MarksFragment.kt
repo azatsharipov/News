@@ -41,7 +41,6 @@ class MarksFragment : MvpAppCompatFragment(), MarksView {
             setHasFixedSize(true)
             adapter = newsAdapter
         }
-
         val database = NewsDatabase(activity as Context)
         val repository = NewsDbRepository(database)
         presenter.loadNewsFromDb(repository)

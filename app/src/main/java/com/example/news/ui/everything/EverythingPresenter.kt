@@ -15,14 +15,16 @@ class EverythingPresenter() : MvpPresenter<EverythingView>() {
     var news: MutableList<News>? = null
     var page = 0
 
-    fun loadNews() {
+    fun loadNews(isSwipe: Boolean = false) {
         presenterScope.launch(Dispatchers.Main) {
             viewState.startLoading()
             withContext(Dispatchers.Default) {
+                if (isSwipe)
+                    page = 0
                 page++
                 news = NewsRepository().getEverythingNews(page)
             }
-            viewState.showNews(news ?: mutableListOf())
+            viewState.showNews(news ?: mutableListOf(), isSwipe)
             viewState.stopLoading()
         }
     }

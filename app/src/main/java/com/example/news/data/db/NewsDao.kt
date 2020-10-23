@@ -5,7 +5,7 @@ import com.example.news.data.News
 
 @Dao
 interface NewsDao {
-    @Query("SELECT * FROM News")
+    @Query("SELECT * FROM my_news")
     suspend fun getAll(): List<News>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
